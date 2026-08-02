@@ -27,6 +27,10 @@ from google import genai
 from google.genai import types
 from google.genai import errors as genai_errors
 
+from logging_config import get_logger
+
+log = get_logger("llm")
+
 # Load key/model config from the project-root .env if present, so callers don't
 # have to export vars manually. Values already in the environment win over .env.
 try:
@@ -152,7 +156,16 @@ class LLMService:
 
         text, call = self._generate(touchpoint, user_prompt, config)
         self.call_log.append(call.to_dict())
-        if not call.ok:
+        if call.ok:
+            log.info(
+                "llm %s model=%s %.2fs tokens=%s",
+                touchpoint, self.model, call.latency_s, call.total_tokens,
+            )
+        else:
+            log.warning(
+                "llm %s model=%s FAILED %.2fs: %s",
+                touchpoint, self.model, call.latency_s, call.error,
+            )
             raise RuntimeError(f"LLM call failed for {touchpoint}: {call.error}")
 
         try:

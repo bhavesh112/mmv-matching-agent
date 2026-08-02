@@ -38,6 +38,7 @@ from typing import Callable, Optional, TypedDict
 from langgraph.graph import END, START, StateGraph
 
 import config
+from logging_config import get_logger
 from prompts.react_reasoning_prompt import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
 from services.llm_service import LLMService
 from state import MMVState
@@ -457,15 +458,24 @@ def reason(state: MMVState) -> dict:
     ``reasoning_decision`` ({match, confidence, reason}), ``reasoning_trace``,
     ``validation_status``, ``step_count`` and ``llm_call_log``.
     """
+    log = get_logger("node.reason")
     service = LLMService()
     normalized = state.get("normalized_record") or state.get("input_record") or {}
     candidates = state.get("candidate_records") or []
+    log.info("reason start: %d candidates", len(candidates))
 
     outcome = run_reasoning_agent(
         normalized,
         candidates,
         service=service,
         retrieve_fn=_default_retrieve_fn,
+    )
+
+    match = outcome["match"] or {}
+    log.info(
+        "reason done: match=%s conf=%.2f steps=%d validation=%s",
+        match.get("mmv_id", "none"), outcome["confidence"],
+        outcome["step_count"], outcome["validation_status"],
     )
 
     return {

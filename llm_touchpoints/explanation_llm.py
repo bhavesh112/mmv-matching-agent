@@ -29,6 +29,7 @@ import json
 from typing import Optional
 
 import config
+from logging_config import get_logger
 from prompts.explanation_prompt import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
 from services.llm_service import LLMService
 from state import MMVState
@@ -211,8 +212,10 @@ def explain(state: MMVState) -> dict:
     returns ``{"explanation": ..., "llm_call_log": ...}``. This is the final LLM
     touchpoint in the graph; the decision is already fixed before it runs.
     """
+    log = get_logger("node.explain")
     normalized = state.get("normalized_record") or state.get("input_record") or {}
     decision = state.get("reasoning_decision") or {}
+    log.info("explain start: final_decision=%s", state.get("final_decision", "review"))
 
     outcome = explain_decision(
         final_decision=state.get("final_decision", "review"),
@@ -225,6 +228,7 @@ def explain(state: MMVState) -> dict:
         verifier_result=state.get("verifier_result") or None,
     )
 
+    log.info("explain done (%d chars)", len(outcome.get("explanation") or ""))
     prior_log = state.get("llm_call_log") or []
     return {
         "explanation": outcome["explanation"],

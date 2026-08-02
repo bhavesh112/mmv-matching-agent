@@ -42,24 +42,32 @@ import config
 from llm_touchpoints.explanation_llm import explain
 from llm_touchpoints.reasoning_llm import reason
 from llm_touchpoints.verifier_llm import verify
+from logging_config import get_logger
 from services.audit_logger import AuditLogger
 from state import MMVState
+
+log = get_logger("graph")
 
 
 def _route_by_confidence(state: MMVState) -> str:
     """Bucket the reasoning confidence into the three routing tiers."""
     confidence = float(state.get("confidence") or 0.0)
     if confidence > config.AUTO_APPROVE_CONFIDENCE_THRESHOLD:
-        return "verify"
-    if confidence >= config.REVIEW_CONFIDENCE_FLOOR:
-        return "review"
-    return "reject"
+        route = "verify"
+    elif confidence >= config.REVIEW_CONFIDENCE_FLOOR:
+        route = "review"
+    else:
+        route = "reject"
+    log.info("route: reason conf=%.2f -> %s", confidence, route)
+    return route
 
 
 def _route_after_verify(state: MMVState) -> str:
     """A passing verifier auto-approves; any failure downgrades to review."""
     result = state.get("verifier_result") or {}
-    return "approve" if result.get("passed") else "review"
+    route = "approve" if result.get("passed") else "review"
+    log.info("route: verify passed=%s -> %s", bool(result.get("passed")), route)
+    return route
 
 
 def _approve(state: MMVState) -> dict:

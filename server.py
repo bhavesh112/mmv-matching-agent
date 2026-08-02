@@ -22,6 +22,7 @@ from __future__ import annotations
 import io
 import os
 import threading
+import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -42,12 +43,16 @@ except ImportError:
     pass
 
 import config  # noqa: E402
+from logging_config import get_logger, setup_logging  # noqa: E402
 from services.csv_loader import load_mmv_master  # noqa: E402
 from services.matching_pipeline import (  # noqa: E402
     MockPipeline,
     build_record_result,
     thresholds,
 )
+
+setup_logging()
+log = get_logger("server")
 
 _PROJECT_ROOT = Path(__file__).resolve().parent
 _SAMPLE_INPUTS = _PROJECT_ROOT / "eval" / "labeled_ground_truth.csv"
@@ -206,17 +211,37 @@ def _read_inputs(upload: UploadFile) -> list[dict]:
 
 
 def _run_mock(job_id: str, records: list[dict], master_df: pd.DataFrame) -> None:
+    started = time.monotonic()
+    log.info("job start mode=mock records=%d master_rows=%d", len(records), len(master_df))
     try:
         pipeline = MockPipeline(master_df)
-        for rec in records:
+        counts: dict[str, int] = {}
+        for i, rec in enumerate(records, 1):
+            rid = rec.get("input_id", "?")
+            t0 = time.monotonic()
             state = pipeline.run(rec)
+            decision = state.get("final_decision", "?")
+            counts[decision] = counts.get(decision, 0) + 1
+            log.info(
+                "record %d/%d %s -> %s conf=%.2f (%dms)",
+                i, len(records), rid, decision,
+                float(state.get("confidence") or 0.0),
+                int((time.monotonic() - t0) * 1000),
+            )
             STORE.append_record(job_id, build_record_result(rec, state, "mock"))
         STORE.finish(job_id)
+        log.info(
+            "job done mode=mock records=%d breakdown=%s (%.1fs)",
+            len(records), counts, time.monotonic() - started,
+        )
     except Exception as exc:  # noqa: BLE001
+        log.exception("job failed mode=mock")
         STORE.finish(job_id, error=str(exc))
 
 
 def _run_live(job_id: str, records: list[dict], master_df: pd.DataFrame) -> None:
+    started = time.monotonic()
+    log.info("job start mode=live records=%d master_rows=%d", len(records), len(master_df))
     try:
         from services.retrieval_service import RetrievalService
         from llm_touchpoints.normalization_llm import normalize_record
@@ -226,12 +251,19 @@ def _run_live(job_id: str, records: list[dict], master_df: pd.DataFrame) -> None
 
         retrieval = RetrievalService(df=master_df)
         graph_app = build_graph()
+        log.info("live pipeline built (retrieval + graph); processing %d records", len(records))
 
-        for rec in records:
+        counts: dict[str, int] = {}
+        errors = 0
+        for i, rec in enumerate(records, 1):
+            rid = rec.get("input_id", "?")
+            t0 = time.monotonic()
             try:
+                log.info("record %d/%d %s: %r", i, len(records), rid, rec.get("raw_input", ""))
                 normalized = normalize_record({"raw_input": rec["raw_input"]})
                 queries = reformulate_queries(normalized)
                 candidates = _retrieve_multi(retrieval, queries, CANDIDATE_TOP_N)
+                log.info("record %s retrieved %d candidates", rid, len(candidates))
                 state = graph_app.invoke({
                     "input_record": rec,
                     "normalized_record": normalized,
@@ -239,6 +271,8 @@ def _run_live(job_id: str, records: list[dict], master_df: pd.DataFrame) -> None
                 })
                 state.setdefault("input_record", rec)
             except Exception as exc:  # noqa: BLE001 - fail safe per record
+                errors += 1
+                log.exception("record %s failed, flagging for review", rid)
                 state = {
                     "input_record": rec,
                     "normalized_record": {"raw_input": rec["raw_input"]},
@@ -259,9 +293,22 @@ def _run_live(job_id: str, records: list[dict], master_df: pd.DataFrame) -> None
                     "llm_call_log": [],
                     "error": str(exc),
                 }
+            decision = state.get("final_decision", "?")
+            counts[decision] = counts.get(decision, 0) + 1
+            log.info(
+                "record %d/%d %s -> %s conf=%.2f (%dms)",
+                i, len(records), rid, decision,
+                float(state.get("confidence") or 0.0),
+                int((time.monotonic() - t0) * 1000),
+            )
             STORE.append_record(job_id, build_record_result(rec, state, "live"))
         STORE.finish(job_id)
+        log.info(
+            "job done mode=live records=%d breakdown=%s errors=%d (%.1fs)",
+            len(records), counts, errors, time.monotonic() - started,
+        )
     except Exception as exc:  # noqa: BLE001
+        log.exception("job failed mode=live")
         STORE.finish(job_id, error=str(exc))
 
 
@@ -323,9 +370,16 @@ def match(
     records = _read_inputs(inputs)
 
     job = STORE.create(mode=mode, total=len(records), master_rows=len(master_df))
+    log.info(
+        "match accepted job=%s mode=%s records=%d master_rows=%d",
+        job["job_id"], mode, len(records), len(master_df),
+    )
     runner = _run_mock if mode == "mock" else _run_live
     thread = threading.Thread(
-        target=runner, args=(job["job_id"], records, master_df), daemon=True
+        target=runner,
+        args=(job["job_id"], records, master_df),
+        name=f"job-{job['job_id']}",
+        daemon=True,
     )
     thread.start()
     return JSONResponse({"job_id": job["job_id"], "mode": mode, "total": len(records)})

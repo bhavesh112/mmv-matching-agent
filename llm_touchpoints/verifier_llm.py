@@ -28,6 +28,7 @@ import json
 from typing import Optional
 
 import config
+from logging_config import get_logger
 from prompts.verifier_prompt import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
 from services.llm_service import LLMService
 from state import MMVState
@@ -121,15 +122,21 @@ def verify(state: MMVState) -> dict:
     LLM call(s) appended to ``llm_call_log``. Only invoked on the top routing
     tier (see ``graph.build_graph``).
     """
+    log = get_logger("node.verify")
     normalized = state.get("normalized_record") or state.get("input_record") or {}
     selected = state.get("selected_match") or {}
     decision = state.get("reasoning_decision") or {}
+    log.info("verify start: match=%s", selected.get("mmv_id", "none"))
 
     outcome = run_verifier(
         normalized,
         selected,
         reason=decision.get("reason", ""),
         confidence=state.get("confidence"),
+    )
+    log.info(
+        "verify done: passed=%s verdict=%s",
+        outcome["passed"], outcome.get("verdict", "?"),
     )
 
     verifier_result = {

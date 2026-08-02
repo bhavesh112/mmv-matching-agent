@@ -106,3 +106,13 @@ EXPLANATION_TEMPERATURE: float = _float_env("MMV_EXPLANATION_TEMPERATURE", 0.2)
 # is written, as JSON lines. Relative paths resolve against the project root.
 # Override with MMV_AUDIT_LOG_PATH.
 AUDIT_LOG_PATH = os.environ.get("MMV_AUDIT_LOG_PATH") or "logs/audit_log.jsonl"
+
+
+# --- Operational logging --------------------------------------------------
+
+# Where the backend's operational log (job lifecycle, node steps, LLM calls) is
+# written, with rotation. Relative paths resolve against the project root. This
+# is distinct from AUDIT_LOG_PATH (the per-record domain audit trail).
+# Override with MMV_LOG_PATH / MMV_LOG_LEVEL.
+LOG_PATH = os.environ.get("MMV_LOG_PATH") or "logs/backend.log"
+LOG_LEVEL = os.environ.get("MMV_LOG_LEVEL") or "INFO"
