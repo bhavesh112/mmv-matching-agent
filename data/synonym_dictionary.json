@@ -1,0 +1,54 @@
+{
+  "make_synonyms": {
+    "Maruti Suzuki": "Maruti",
+    "Maruti-Suzuki": "Maruti",
+    "MSIL": "Maruti",
+    "Suzuki": "Maruti",
+    "Hyundai Motors": "Hyundai",
+    "HMIL": "Hyundai",
+    "Honda Cars": "Honda",
+    "Tata Motors": "Tata",
+    "TML": "Tata",
+    "Mahindra & Mahindra": "Mahindra",
+    "Mahindra and Mahindra": "Mahindra",
+    "M&M": "Mahindra",
+    "Toyota Kirloskar": "Toyota",
+    "Kia Motors": "Kia"
+  },
+  "model_synonyms": {
+    "Grand i10": "i10",
+    "New Swift": "Swift",
+    "Innova": "Innova Crysta",
+    "Scorpio N": "Scorpio-N",
+    "ScorpioN": "Scorpio-N",
+    "Xuv 700": "XUV700",
+    "XUV-700": "XUV700",
+    "Xuv700": "XUV700"
+  },
+  "variant_synonyms": {
+    "VXI Plus": "VXI+",
+    "VXi+": "VXI+",
+    "V XI": "VXI",
+    "XZ Plus": "XZ+",
+    "XZ+ ": "XZ+",
+    "AX 7": "AX7"
+  },
+  "fuel_synonyms": {
+    "Petol": "Petrol",
+    "petrol": "Petrol",
+    "PETROL": "Petrol",
+    "Diesal": "Diesel",
+    "diesel": "Diesel",
+    "DSL": "Diesel"
+  },
+  "transmission_synonyms": {
+    "MT": "Manual",
+    "Manual Transmission": "Manual",
+    "AT": "Automatic",
+    "Auto": "Automatic",
+    "Automatic Transmission": "Automatic",
+    "AMT": "AMT",
+    "CVT": "CVT",
+    "IVT": "IVT"
+  }
+}

@@ -1,0 +1,10 @@
+pandas>=2.0
+rapidfuzz>=3.0
+sentence-transformers>=2.2
+numpy>=1.24
+google-genai>=1.0        # Gemini client for the LLM touchpoints
+python-dotenv>=1.0       # loads GEMINI_API_KEY etc. from a local .env
+langgraph>=0.2           # StateGraph orchestration + ReAct reasoning loop
+fastapi>=0.110           # thin HTTP layer over the graph.py pipeline (see server.py)
+uvicorn>=0.29            # ASGI server that runs the FastAPI app
+python-multipart>=0.0.9  # multipart parsing for the CSV upload endpoint

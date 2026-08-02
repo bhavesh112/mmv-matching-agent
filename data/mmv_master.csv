@@ -1,0 +1,32 @@
+mmv_id,make,model,variant,fuel_type,transmission,cc,seating_capacity,year_start,year_end
+MMV001,Maruti,Swift,LXI,Petrol,Manual,1197,5,2018,2023
+MMV002,Maruti,Swift,VXI,Petrol,Manual,1197,5,2018,2023
+MMV003,Maruti,Swift,VXI+,Petrol,Manual,1197,5,2018,2023
+MMV004,Maruti,Swift,VXI,Petrol,AMT,1197,5,2018,2023
+MMV005,Maruti,Swift,ZXI,Petrol,Manual,1197,5,2018,2023
+MMV006,Maruti,Swift,LDI,Diesel,Manual,1248,5,2015,2019
+MMV007,Maruti,Swift,VDI,Diesel,Manual,1248,5,2015,2019
+MMV008,Maruti,Baleno,Delta,Petrol,Manual,1197,5,2019,2024
+MMV009,Maruti,Baleno,Zeta,Petrol,CVT,1197,5,2019,2024
+MMV010,Hyundai,i20,Magna,Petrol,Manual,1197,5,2020,2024
+MMV011,Hyundai,i20,Sportz,Petrol,Manual,1197,5,2020,2024
+MMV012,Hyundai,i20,Sportz,Petrol,IVT,998,5,2020,2024
+MMV013,Hyundai,i20,Asta,Diesel,Manual,1396,5,2018,2020
+MMV014,Hyundai,Creta,E,Petrol,Manual,1497,5,2020,2024
+MMV015,Hyundai,Creta,SX,Diesel,Automatic,1493,5,2020,2024
+MMV016,Honda,City,V,Petrol,Manual,1498,5,2020,2024
+MMV017,Honda,City,VX,Petrol,CVT,1498,5,2020,2024
+MMV018,Honda,City,VX,Diesel,Manual,1498,5,2017,2020
+MMV019,Honda,Amaze,S,Petrol,Manual,1199,5,2018,2023
+MMV020,Honda,Amaze,VX,Diesel,CVT,1498,5,2018,2023
+MMV021,Tata,Nexon,XM,Petrol,Manual,1199,5,2020,2024
+MMV022,Tata,Nexon,XZ+,Petrol,AMT,1199,5,2020,2024
+MMV023,Tata,Nexon,XM,Diesel,Manual,1497,5,2020,2024
+MMV024,Tata,Nexon,XZ,Diesel,Manual,1497,5,2020,2024
+MMV025,Mahindra,XUV700,MX,Petrol,Manual,1999,7,2021,2024
+MMV026,Mahindra,XUV700,AX7,Diesel,Automatic,2184,7,2021,2024
+MMV027,Mahindra,Scorpio-N,Z4,Diesel,Manual,2184,7,2022,2024
+MMV028,Toyota,Innova Crysta,GX,Diesel,Manual,2393,7,2019,2024
+MMV029,Toyota,Innova Crysta,GX,Diesel,Manual,2393,8,2019,2024
+MMV030,Kia,Seltos,HTK,Petrol,Manual,1497,5,2020,2024
+MMV031,Kia,Seltos,HTX,Diesel,Automatic,1493,5,2020,2024

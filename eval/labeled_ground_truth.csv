@@ -1,0 +1,20 @@
+input_id,raw_input,expected_match_type,expected_mmv_id,notes
+GT01,Maruti Suzuki Swift VXI Petrol Manual,match,MMV002,Easy - full make synonym + exact variant/fuel/transmission
+GT02,Swift VXI+ petrol,match,MMV003,Easy - VXI+ disambiguates from VXI near-duplicate
+GT03,Hyundai i20 Sportz petrol manual 1197,match,MMV011,Easy - CC disambiguates from turbo IVT variant
+GT04,Honda City VX Diesel,match,MMV018,Easy - fuel makes VX unique
+GT05,Tata Nexon XM diesel,match,MMV023,Easy - fuel disambiguates XM petrol vs diesel
+GT06,Mahindra XUV 700 AX7 diesel automatic,match,MMV026,Easy - model synonym XUV 700 -> XUV700
+GT07,Kia Seltos HTX dsl AT,match,MMV031,Easy - fuel+transmission synonyms (dsl->Diesel AT->Automatic)
+GT08,Baleno Zeta CVT,match,MMV009,Easy - variant+transmission unique
+GT09,Innova GX diesel 7 seater,match,MMV028,Easy - model synonym Innova->Innova Crysta + seating disambiguates
+GT10,Splendor Plus,reject,,Reject - two-wheeler / not in four-wheeler MMV master
+GT11,Swift VXI petrol,ambiguous,MMV002|MMV004,Ambiguous - Manual vs AMT both match without transmission
+GT12,Honda City VX,ambiguous,MMV017|MMV018,Ambiguous - Petrol CVT vs Diesel Manual without fuel
+GT13,Innova Crysta GX diesel,ambiguous,MMV028|MMV029,Ambiguous - 7 vs 8 seater without seating capacity
+GT14,i20 Sportz petrol,ambiguous,MMV011|MMV012,Ambiguous - 1197 Manual vs 998 IVT turbo without CC/transmission
+GT15,Maruti 800 Std petrol,reject,,Reject - model not present in master
+GT16,Ford EcoSport Titanium diesel,reject,,Reject - make not present in master
+GT17,Swift ZDI diesel manual,reject,,Reject - ZDI diesel variant does not exist (only LDI/VDI diesel)
+GT18,Toyota Fortuner 4x4 diesel,reject,,Reject - model not present in master
+GT19,Maruti-Suzuki Swift LDI Diesel,match,MMV006,Easy - hyphenated make synonym + old diesel variant
