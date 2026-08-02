@@ -14,6 +14,21 @@ const STEPS = [
 // chained (not fired on a fixed interval), so requests can never overlap.
 const POLL_INTERVAL_MS = 1500
 
+// Give up only after this many consecutive transient failures. A single 502/503
+// (backend momentarily busy or restarting on Render) should not kill polling
+// while the job is still running server-side.
+const MAX_POLL_FAILURES = 6
+
+// A failure is worth retrying if it's a network error (no HTTP status) or a
+// transient server/gateway status. Terminal 4xx (e.g. 404 job-not-found) are
+// not retryable — retrying those is pointless.
+function isRetryable(err) {
+  const status = err?.status
+  if (status == null) return true // network error / fetch rejected
+  if (status === 429) return true
+  return status >= 500
+}
+
 export default function App() {
   const [health, setHealth] = useState(null)
   const [screen, setScreen] = useState('upload')
@@ -22,6 +37,7 @@ export default function App() {
   const [error, setError] = useState(null)
   const pollRef = useRef(null)
   const cancelledRef = useRef(false)
+  const failCountRef = useRef(0)
 
   useEffect(() => {
     getHealth().then(setHealth).catch(() => setHealth({ gemini_key_present: false }))
@@ -39,16 +55,27 @@ export default function App() {
   const poll = useCallback((jobId) => {
     clearTimeout(pollRef.current)
     cancelledRef.current = false
+    failCountRef.current = 0
     const tick = async () => {
       try {
         const next = await getJob(jobId)
         if (cancelledRef.current) return
+        failCountRef.current = 0
         setJob(next)
         if (next.status === 'running') {
           pollRef.current = setTimeout(tick, POLL_INTERVAL_MS)
         }
-      } catch {
-        // Stop polling on error; the last-known job state stays on screen.
+      } catch (err) {
+        // Keep the last-known job state on screen either way. Transient failures
+        // (502/503/504, network blips) are retried so a brief backend hiccup
+        // can't permanently break the chained poll; we back off slightly and
+        // give up only after MAX_POLL_FAILURES in a row. Terminal errors stop.
+        if (cancelledRef.current) return
+        failCountRef.current += 1
+        if (isRetryable(err) && failCountRef.current < MAX_POLL_FAILURES) {
+          const backoff = POLL_INTERVAL_MS * Math.min(failCountRef.current, 4)
+          pollRef.current = setTimeout(tick, backoff)
+        }
       }
     }
     pollRef.current = setTimeout(tick, POLL_INTERVAL_MS)

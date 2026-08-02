@@ -10,7 +10,12 @@ async function jsonOrThrow(res) {
     } catch {
       /* non-JSON error body */
     }
-    throw new Error(detail)
+    const err = new Error(detail)
+    // Expose the HTTP status so callers can tell transient gateway failures
+    // (502/503/504) from terminal ones (e.g. 404). Network-level failures
+    // reject before reaching here and carry no status at all.
+    err.status = res.status
+    throw err
   }
   return res.json()
 }
