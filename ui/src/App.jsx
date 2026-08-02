@@ -10,6 +10,10 @@ const STEPS = [
   { id: 'results', num: 3, label: 'Results' },
 ]
 
+// Delay between the end of one status poll and the start of the next. Polls are
+// chained (not fired on a fixed interval), so requests can never overlap.
+const POLL_INTERVAL_MS = 1500
+
 export default function App() {
   const [health, setHealth] = useState(null)
   const [screen, setScreen] = useState('upload')
@@ -17,26 +21,40 @@ export default function App() {
   const [starting, setStarting] = useState(false)
   const [error, setError] = useState(null)
   const pollRef = useRef(null)
+  const cancelledRef = useRef(false)
 
   useEffect(() => {
     getHealth().then(setHealth).catch(() => setHealth({ gemini_key_present: false }))
   }, [])
 
-  // Poll the running job until it finishes, streaming records into the UI.
-  const poll = useCallback((jobId) => {
-    clearInterval(pollRef.current)
-    pollRef.current = setInterval(async () => {
-      try {
-        const next = await getJob(jobId)
-        setJob(next)
-        if (next.status !== 'running') clearInterval(pollRef.current)
-      } catch {
-        clearInterval(pollRef.current)
-      }
-    }, 500)
+  const stopPolling = useCallback(() => {
+    cancelledRef.current = true
+    clearTimeout(pollRef.current)
   }, [])
 
-  useEffect(() => () => clearInterval(pollRef.current), [])
+  // Poll the running job until it finishes, streaming records into the UI.
+  // Each poll is scheduled only AFTER the previous request resolves (chained
+  // setTimeout, not setInterval), so a slow backend can never accumulate a
+  // backlog of overlapping in-flight requests.
+  const poll = useCallback((jobId) => {
+    clearTimeout(pollRef.current)
+    cancelledRef.current = false
+    const tick = async () => {
+      try {
+        const next = await getJob(jobId)
+        if (cancelledRef.current) return
+        setJob(next)
+        if (next.status === 'running') {
+          pollRef.current = setTimeout(tick, POLL_INTERVAL_MS)
+        }
+      } catch {
+        // Stop polling on error; the last-known job state stays on screen.
+      }
+    }
+    pollRef.current = setTimeout(tick, POLL_INTERVAL_MS)
+  }, [])
+
+  useEffect(() => () => stopPolling(), [stopPolling])
 
   const handleStart = async ({ inputsFile, masterFile, mode }) => {
     setStarting(true)
@@ -55,7 +73,7 @@ export default function App() {
   }
 
   const handleReset = () => {
-    clearInterval(pollRef.current)
+    stopPolling()
     setJob(null)
     setError(null)
     setScreen('upload')
