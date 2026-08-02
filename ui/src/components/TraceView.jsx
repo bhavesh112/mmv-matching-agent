@@ -103,6 +103,14 @@ function PipelineRail({ touchpoints, onJump }) {
           role="listitem"
           className={`station station--${tp.status}${tp.status === 'fired' ? ' station--clickable' : ''}`}
           onClick={() => onJump(tp)}
+          tabIndex={tp.status === 'fired' ? 0 : undefined}
+          aria-label={tp.status === 'fired' ? `Show ${tp.name} details` : undefined}
+          onKeyDown={(e) => {
+            if ((e.key === 'Enter' || e.key === ' ') && tp.status === 'fired') {
+              e.preventDefault()
+              onJump(tp)
+            }
+          }}
         >
           <div className="station__top">
             <span className="station__num">{tp.id}</span>
@@ -223,12 +231,15 @@ function QueriesOut({ output }) {
 
 function ReasoningOut({ record }) {
   const trace = record.reasoning?.trace || []
+  const vs = record.validation_status
+  // Only a real pass/fail gets green/red; not_validated / null / unknown stay neutral.
+  const vsClass = vs === 'pass' ? 'pass' : vs === 'fail' || vs === 'reject' ? 'fail' : 'na'
   return (
     <>
       <div style={{ marginTop: 10, fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.5 }}>
         {record.reasoning?.step_count} step(s) · hard-rule validation:{' '}
-        <span className={`val-pill val-pill--${record.validation_status === 'pass' ? 'pass' : 'fail'}`}>
-          {record.validation_status || 'n/a'}
+        <span className={`val-pill val-pill--${vsClass}`}>
+          {vs || 'n/a'}
         </span>
       </div>
       <ReasoningTape trace={trace} />

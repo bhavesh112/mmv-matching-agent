@@ -39,3 +39,5 @@ Thumbs.db
 # --- Node.js ---
 
 node_modules/
+
+logs/

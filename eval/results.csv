@@ -1,0 +1,3 @@
+input_id,raw_input,expected_match_type,expected_mmv_id,predicted_decision,predicted_mmv_id,confidence,reached_verifier,verifier_passed,downgraded_by_verifier,step_count,decision_correct,id_correct,correct,total_cost_usd,total_latency_s,reasoning_latency_s,verifier_latency_s,explanation_latency_s
+GT01,Maruti Suzuki Swift VXI Petrol Manual,match,MMV002,review,MMV002,0.98,True,False,True,2,False,True,False,0.003194,110.0508,5.4074,5.2462,1.6454
+GT10,Splendor Plus,reject,,rejected,,0.0,False,False,False,2,True,True,True,0.003112,46.8702,32.0568,0.0,1.1518

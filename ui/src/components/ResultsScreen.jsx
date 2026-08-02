@@ -62,6 +62,15 @@ export default function ResultsScreen({ job, onRecordPatched }) {
                   <tr
                     className={`row${open ? ' row--open' : ''}`}
                     onClick={() => setOpenId(open ? null : r.record_id)}
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={open}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        setOpenId(open ? null : r.record_id)
+                      }
+                    }}
                   >
                     <td className="chev-cell">
                       <span className={open ? 'open' : ''}>▶</span>
