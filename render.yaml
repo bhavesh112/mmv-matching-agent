@@ -1,0 +1,18 @@
+# Render Blueprint — deploy the MMV matching app as a single Docker web service.
+# In the Render dashboard: New > Blueprint, point it at this repo, then set the
+# GEMINI_API_KEY secret when prompted (sync: false means it is not stored here).
+services:
+  - type: web
+    name: mmv-matching-agent
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    # torch + the embedding model need more than the free tier's 512MB RAM.
+    # Bump/lower as needed; "starter" is the smallest that reliably fits.
+    plan: starter
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false            # set this secret in the Render dashboard
+      - key: GEMINI_MODEL
+        value: gemini-flash-latest

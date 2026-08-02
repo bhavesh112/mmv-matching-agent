@@ -1,0 +1,34 @@
+# Secrets — never bake these into the image (Render injects env vars instead).
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual envs
+.venv/
+venv/
+env/
+ENV/
+
+# Node (UI is rebuilt inside the image)
+ui/node_modules/
+ui/dist/
+
+# Version control / OS / editor
+.git/
+.gitignore
+.DS_Store
+.idea/
+.vscode/
+
+# Local run artifacts and large non-runtime files
+logs/
+*.pptx
